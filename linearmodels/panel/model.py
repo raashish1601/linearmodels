@@ -3315,7 +3315,10 @@ class FamaMacBeth(_PanelModelBase):
         """
         y = cast("linearmodels.typing.data.Float64Array", self._y)
         x = cast("linearmodels.typing.data.Float64Array", self._x)
-        root_w = cast("linearmodels.typing.data.Float64Array", np.sqrt(self._w))
+        # Normalize the weights to have mean 1, as in self.weights, so that the
+        # residual and total sums of squares use the same weights
+        w = self._w / self._w[self._not_null].mean()
+        root_w = cast("linearmodels.typing.data.Float64Array", np.sqrt(w))
         wy = cast("linearmodels.typing.data.Float64Array", root_w * y)
         wx = cast("linearmodels.typing.data.Float64Array", root_w * x)
 

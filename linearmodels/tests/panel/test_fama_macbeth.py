@@ -69,6 +69,23 @@ def test_fama_macbeth(data):
     access_attributes(res)
 
 
+def test_fama_macbeth_weighted_rsquared(data):
+    mod = FamaMacBeth(data.y, data.x, weights=data.w)
+    res = mod.fit()
+    y = mod.dependent.values2d
+    w = mod.weights.values2d
+    e = y - res.fitted_values.values
+    if mod.has_constant:
+        y = y - (w * y).sum() / w.sum()
+    expected = 1 - (w * e**2).sum() / (w * y**2).sum()
+    assert_allclose(res.rsquared, expected)
+
+    # The scale of the weights does not matter
+    scaled = FamaMacBeth(data.y, data.x, weights=10 * data.w).fit()
+    assert_allclose(scaled.rsquared, res.rsquared)
+    assert_allclose(scaled.loglik, res.loglik)
+
+
 def test_unknown_cov_type(data):
     with pytest.raises(ValueError, match=r"Unknown cov_type"):
         FamaMacBeth(data.y, data.x).fit(cov_type="unknown")
